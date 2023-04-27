@@ -68,9 +68,14 @@ names(lst) <- rownames(traits)
 # tree
 tree_str <- write.tree(tree, append = FALSE, digits = 10, tree.names = FALSE)
 data <- list(tree=tree_str, tip_traits = lst)
-write_json(data, "table.json")
+write_json(data, "output/sim_BM.json")
 
 
+# convert the list to a JSON string with indentation
+json_str <- toJSON(data, pretty = TRUE)
+
+# write the JSON string to a file
+write(json_str, "output/sim_BM.json")
 #----
 
 

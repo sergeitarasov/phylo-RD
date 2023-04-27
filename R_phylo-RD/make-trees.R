@@ -2,28 +2,6 @@ library(phytools)
 library(jsonlite)
 source('R/sim_BM-functions.R')
 
-# ---------------
-# Arguments
-# Du(Da), Dv(Db), f, k
-# ---------------
-nSim = 1
-nTaxa = 10
-treeScale = 100
-birthRate = 1
-deathRate = 0
-
-#               Du(Da), Dv(Db), f, k
-parsFixed   = c(0.16, NA, 0.035, 0.065)
-rootValues  = c(0, 0.08, 0, 0.065)
-mu          = c(0, 0, 0, 0)
-sig2        = c(0, 0.001, 0, 0.1)
-
-bmBounds = matrix(c(0, 0,
-                    0, 1,
-                    0, 0,
-                    0, 1), 4,2, byrow = TRUE)
-# ---------------
-
 # params = [
 #   [0.16, 0.08, 0.035, 0.065],
 #   [0.14, 0.06, 0.035, 0.065],
@@ -37,44 +15,36 @@ bmBounds = matrix(c(0, 0,
 #
 #   Da, Db, f, k = param
 
-tree<-pbtree(n=nTaxa, scale=treeScale, b=birthRate, d=deathRate, nsim = 1)
+# ---------------
+# Arguments
+# Du(Da), Dv(Db), f, k
+# ---------------
+sim_pars <- list(
+  nSim = 1,
+  nTaxa = 10,
+  treeScale = 100,
+  birthRate = 1,
+  deathRate = 0,
+  #               Du(Da), Dv(Db), f, k
+  parsFixed   = c(0.16, NA, 0.035, 0.065),
+  rootValues  = c(0, 0.06, 0, 0.065),
+  mu          = c(0, 0, 0, 0),
+  sig2        = c(0, 0.001, 0, 0),
 
-traits <- c()
-# Simulate Traits
-# i=1
-for (i in c(1:4)){
-  if (is.na(parsFixed[i])){
-    tip_values <- fastBM(tree, a=rootValues[i], mu=mu[i], sig2=sig2[i], bounds=bmBounds[i,], internal=FALSE, nsim=1)
-    # print(tip_values)
-    traits <- cbind(traits, tip_values)
-  } else if (is.numeric(parsFixed[i])) {
-    tip_values <-rep(parsFixed[i], nTaxa)
-    traits <- cbind(traits, tip_values)
-  } else {
-    print('Error: unknown format')
-  }
-}
+  bmBounds = matrix(c(0, 0,
+                      0.05, 0.08,
+                      0, 0,
+                      0, 1), 4,2, byrow = TRUE)
+)
+# ---------------
 
-colnames(traits) <- c('Du', 'Dv', 'f', 'k')
-
-# write.tree(tree, append = FALSE, digits = 10, tree.names = FALSE)
-#
-# class(traits)
-# as.list(t(traits))
-
-lst <- split(traits, row(traits))
-lst
-names(lst) <- rownames(traits)
-
-# tree
-tree_str <- write.tree(tree, append = FALSE, digits = 10, tree.names = FALSE)
-data <- list(tree=tree_str, tip_traits = lst)
-#write_json(data, "output/sim_BM.json")
+data <- simTreeBM(sim_pars)
+data
 # convert the list to a JSON string with indentation
 json_str <- toJSON(data, pretty = TRUE)
-
 # write the JSON string to a file
 write(json_str, "output/sim_BM.json")
+
 
 #------- Read
 
@@ -83,26 +53,7 @@ json <- fromJSON("output/sim_BM.json")
 #----
 
 
-
-# create a data frame with the table data
-df <- data.frame(
-  Du = c(0.16, 0.16),
-  Dv = c(0.9767619, 0.8705721),
-  f = c(0.035, 0.035),
-  k = c(0.82825596, 0.98663531)
-)
-
-# set the row names
-rownames(df) <- c("t7", "t8")
-
-# convert the data frame to a named list
-data <- as.list(df)
-
-# write the data to a JSON file
-write_json(data, "table.json")
-
-
-#----
+#---- Plot
 plot(tree)
 phenogram(tree, traits[,2], spread.labels=TRUE, spread.cost=c(1,0))
 #--

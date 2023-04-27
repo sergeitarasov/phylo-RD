@@ -1,5 +1,6 @@
 library(phytools)
 library(jsonlite)
+source('R/sim_BM-functions.R')
 
 # ---------------
 # Arguments
@@ -12,10 +13,10 @@ birthRate = 1
 deathRate = 0
 
 #               Du(Da), Dv(Db), f, k
-parsFixed   = c(0.16, NA, 0.035, NA)
+parsFixed   = c(0.16, NA, 0.035, 0.065)
 rootValues  = c(0, 0.08, 0, 0.065)
 mu          = c(0, 0, 0, 0)
-sig2        = c(0, 0.1, 0, 0.1)
+sig2        = c(0, 0.001, 0, 0.1)
 
 bmBounds = matrix(c(0, 0,
                     0, 1,
@@ -68,14 +69,17 @@ names(lst) <- rownames(traits)
 # tree
 tree_str <- write.tree(tree, append = FALSE, digits = 10, tree.names = FALSE)
 data <- list(tree=tree_str, tip_traits = lst)
-write_json(data, "output/sim_BM.json")
-
-
+#write_json(data, "output/sim_BM.json")
 # convert the list to a JSON string with indentation
 json_str <- toJSON(data, pretty = TRUE)
 
 # write the JSON string to a file
 write(json_str, "output/sim_BM.json")
+
+#------- Read
+
+json <- fromJSON("output/sim_BM.json")
+
 #----
 
 
